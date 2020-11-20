@@ -607,7 +607,6 @@ class Tacotron2(nn.Module):
             duration_size = None
         else:
             duration_size = duration.size(1)
-        # mel_outputs, gate_outputs, alignments =
         mel_outputs, gate_outputs, alignments = self.decoder.inference(
             encoder_outputs, duration_size)
 
