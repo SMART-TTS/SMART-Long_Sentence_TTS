@@ -253,8 +253,7 @@ def train(output_directory, log_directory, checkpoint_path, warm_start, n_gpus,
             #                                   "mel_{}".format(iteration))
             #     plt.savefig(alignment_path)
             #     for j in range(3):
-            #         for i in range(4):
-
+ 
 
 
             if hparams.distributed_run:
