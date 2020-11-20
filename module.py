@@ -281,21 +281,6 @@ class FFN(nn.Module):
         self.dropout = torch.nn.Dropout(p=0.1)
 
     def forward(self, input_):
-        # # FFN Network
-        # x = input_.transpose(1, 2)
-        # x = self.w_2(t.relu(self.w_1(x)))
-        # x = x.transpose(1, 2)
-        #
-        # # residual connection
-        # x = x + input_
-        #
-        # # dropout
-        # # x = self.dropout(x)
-        #
-        # # layer normalization
-        # x = self.layer_norm(x)
-        #
-        # return x
         return self.w_2(self.dropout(torch.relu(self.w_1(input_))))
 
 
