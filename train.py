@@ -242,11 +242,6 @@ def train(output_directory, log_directory, checkpoint_path, warm_start, n_gpus,
             y_pred = model(x)
 
             loss, d_loss = criterion(y_pred, y)
-
-            #for plot encoder attention
-            # if iteration % 1000 == 0:
-            #     _, mel, _, _, attns, attns_dec = y_pred
-            #     import matplotlib.pylab as plt
  
             if hparams.distributed_run:
                 reduced_loss = reduce_tensor(loss.data, n_gpus).item()
