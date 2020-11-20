@@ -247,13 +247,7 @@ def train(output_directory, log_directory, checkpoint_path, warm_start, n_gpus,
             # if iteration % 1000 == 0:
             #     _, mel, _, _, attns, attns_dec = y_pred
             #     import matplotlib.pylab as plt
-            #     plt.figure()
-            #     plt.imshow(mel[0].T.cpu().detach().numpy())
-            #     alignment_path = os.path.join("/media/qw/data/Experiment/Encoder_selfAtt/outdir/Encoder_alignment",
-            #                                   "mel_{}".format(iteration))
-            #     plt.savefig(alignment_path)
  
-
             if hparams.distributed_run:
                 reduced_loss = reduce_tensor(loss.data, n_gpus).item()
             else:
