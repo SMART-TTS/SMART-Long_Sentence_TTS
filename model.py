@@ -87,7 +87,6 @@ class Attention(nn.Module):
                 b = [memory.size(1), mel_iter // mel_per - A // 2]
                 c = [memory.size(1), B // mel_per]
 
-
             else:
                 A = 500
                 B = memory.size(1) * 14 // 3 
