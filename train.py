@@ -252,9 +252,7 @@ def train(output_directory, log_directory, checkpoint_path, warm_start, n_gpus,
             #     alignment_path = os.path.join("/media/qw/data/Experiment/Encoder_selfAtt/outdir/Encoder_alignment",
             #                                   "mel_{}".format(iteration))
             #     plt.savefig(alignment_path)
-            #     for j in range(3):
  
-
 
             if hparams.distributed_run:
                 reduced_loss = reduce_tensor(loss.data, n_gpus).item()
