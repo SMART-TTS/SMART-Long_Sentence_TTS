@@ -98,9 +98,6 @@ class Attention(nn.Module):
                 b = [memory.size(1), mel_iter // 6 - 250]
                 c = [memory.size(1), 500]
 
-            # print(mel_iter, A, B, duration, memory.size(1))
-            # print(a, b, c)
-
             a = torch.tensor(a).cuda()
             b = torch.tensor(b).cuda()
             c = torch.tensor(c).cuda()
