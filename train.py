@@ -254,7 +254,7 @@ def train(output_directory, log_directory, checkpoint_path, warm_start, n_gpus,
             #     plt.savefig(alignment_path)
             #     for j in range(3):
             #         for i in range(4):
-            #             plt.imshow(attns[j][i*hparams.batch_size].T.cpu().detach().numpy())
+
 
 
             if hparams.distributed_run:
