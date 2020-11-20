@@ -586,7 +586,7 @@ class Tacotron2(nn.Module):
         #     length_regulator_output, duration = self.length_regulator(encoder_outputs, target=alignments_padded)
         #     print('d')
         # else:
-        #     duration = None
+ 
         mel_outputs, gate_outputs, alignments = self.decoder(
             encoder_outputs, mels, output_lengths, memory_lengths=text_lengths)
 
