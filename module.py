@@ -276,10 +276,6 @@ class FFN(nn.Module):
         :param num_hidden: dimension of hidden
         """
         super(FFN, self).__init__()
-        # self.w_1 = Conv(num_hidden, num_hidden * 4, kernel_size=1, w_init='relu')
-        # self.w_2 = Conv(num_hidden * 4, num_hidden, kernel_size=1)
-        # self.dropout = nn.Dropout(p=0.1)
-        # self.layer_norm = nn.LayerNorm(num_hidden)
         self.w_1 = torch.nn.Linear(num_hidden, num_hidden * 4)
         self.w_2 = torch.nn.Linear(num_hidden * 4, num_hidden)
         self.dropout = torch.nn.Dropout(p=0.1)
