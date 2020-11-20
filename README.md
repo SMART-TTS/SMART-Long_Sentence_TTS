@@ -53,6 +53,9 @@ python inference.py  >> log.log
 </code>
 </pre>
 
+## Results
+
+Synthesized audio samples can be found in ./samples
 
 ## Reference code
 
