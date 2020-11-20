@@ -32,8 +32,6 @@ pip install -r requirements.txt
 - tensorflow 1.15.0
 
 
-
-
 ## Training
 
 To train the model(s), run this command:
