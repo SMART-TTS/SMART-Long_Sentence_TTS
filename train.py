@@ -258,7 +258,6 @@ def train(output_directory, log_directory, checkpoint_path, warm_start, n_gpus,
             #             alignment_path = os.path.join("/media/qw/data/Experiment/Encoder_selfAtt/outdir/Encoder_alignment","alignment_{}_{}_{}".format(iteration, j, i))
             #             plt.savefig(alignment_path)
                     # plt.imshow(attns_dec[2][i*hparams.batch_size].T.cpu().detach().numpy())
-                    # alignment_path = os.path.join("/media/qw/data/Experiment/Encoder_selfAtt/outdir/Decoder_alignment","alignment_{}_{}".format(iteration, i))
 
             if hparams.distributed_run:
                 reduced_loss = reduce_tensor(loss.data, n_gpus).item()
