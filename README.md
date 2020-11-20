@@ -58,3 +58,5 @@ python inference.py  >> log.log
 [1] Tacotron2 : https://github.com/NVIDIA/tacotron2
 
 [2] FastSpeech : https://github.com/xcmyz/FastSpeech
+
+[3] MelGAN : https://github.com/seungwonpark/melgan
