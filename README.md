@@ -10,14 +10,6 @@ SMART-Long_Sentence_TTS 모델은 10초 이하의 짧은 훈련 데이터만으�
 추가적으로 decoder의 output을 더 robust하게 예측하기 위해 fastspeech의 duration predictor를 사용하고 본 연구에서는 현재 time step의 mel spectrogram을 생성하는데 참조해야 하는 alignment의 위치를 결정하기 위해 사용합니다.
 
 ## Requirements
-
-To install requirements:
-
-<pre>
-<code>
-pip install -r requirements.txt
-</code>
-</pre>
 - pytorch 3.6
 - pytorch 1.5.0
 - inflect 0.2.5
@@ -30,6 +22,14 @@ pip install -r requirements.txt
 - librosa 0.6.0
 - tensorboardX 1.8
 - tensorflow 1.15.0
+
+To install requirements:
+
+<pre>
+<code>
+pip install -r requirements.txt
+</code>
+</pre>
 
 
 ## Training
