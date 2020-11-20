@@ -11,6 +11,8 @@ SMART-Long_Sentence_TTS 모델은 10초 이하의 짧은 훈련 데이터만으�
 
 
 ## Requirements
+To install requirements:
+
 - pytorch 3.6
 - pytorch 1.5.0
 - inflect 0.2.5
@@ -23,8 +25,6 @@ SMART-Long_Sentence_TTS 모델은 10초 이하의 짧은 훈련 데이터만으�
 - librosa 0.6.0
 - tensorboardX 1.8
 - tensorflow 1.15.0
-
-To install requirements:
 
 <pre>
 <code>
