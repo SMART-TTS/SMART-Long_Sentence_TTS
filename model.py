@@ -76,9 +76,6 @@ class Attention(nn.Module):
         attention_weights_cat: previous and cummulative attention weights
         mask: binary mask for padded data
         """
-        # print(memory.size(1))
-        # print(duration)
-        # print(duration//memory.size(1))
 
 
         if memory.size(0) == 1:  # batch = 1 일때, (합성할때)
