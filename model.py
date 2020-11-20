@@ -112,7 +112,6 @@ class Attention(nn.Module):
                 elif mel_iter >= A and mel_iter < B:
                     sw_mask = get_mask_from_lengths2(a)[1:] ^ ~get_mask_from_lengths2(b)[1:]
                 else:
-                    # print(c)
                     sw_mask = get_mask_from_lengths2(b)[1:]
 
                 alignment = self.get_alignment_energies(
