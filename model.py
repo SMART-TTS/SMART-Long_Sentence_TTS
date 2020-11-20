@@ -92,14 +92,11 @@ class Attention(nn.Module):
 
 
             else:
-                A = 500  # 뭐지,,,,3분의2배정도임
-                B = memory.size(1) * 14 // 3  # 요까진 오지두 않는뎁
-                # print(memory.size(1))
-                # exit()
+                A = 500
+                B = memory.size(1) * 14 // 3 
                 a = [memory.size(1), mel_iter // 6 + 250]
                 b = [memory.size(1), mel_iter // 6 - 250]
                 c = [memory.size(1), 500]
-                # c = [memory.size(1), memory.size(1) * 7 // 9]
 
             # print(mel_iter, A, B, duration, memory.size(1))
             # print(a, b, c)
