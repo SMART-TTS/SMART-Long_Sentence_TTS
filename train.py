@@ -255,7 +255,6 @@ def train(output_directory, log_directory, checkpoint_path, warm_start, n_gpus,
             #     for j in range(3):
             #         for i in range(4):
             #             plt.imshow(attns[j][i*hparams.batch_size].T.cpu().detach().numpy())
-            #             alignment_path = os.path.join("/media/qw/data/Experiment/Encoder_selfAtt/
 
 
             if hparams.distributed_run:
