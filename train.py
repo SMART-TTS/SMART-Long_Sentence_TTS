@@ -289,7 +289,7 @@ if __name__ == '__main__':
                         help='directory to save checkpoints')
     parser.add_argument('-l', '--log_directory', type=str, default='logdir',
                         help='directory to save tensorboard logs')
-    parser.add_argument('-c', '--checkpoint_path', type=str, default='/media/sh/Workspace/긴문장합성/kor_Document-level_Neural_TTS_length/outdir/checkpoint_8000',
+    parser.add_argument('-c', '--checkpoint_path', type=str, #default='/media/sh/Workspace/긴문장합성/kor_Document-level_Neural_TTS_length/outdir/checkpoint_8000',
                         required=False, help='checkpoint path')
     parser.add_argument('--warm_start', action='store_true', #default=True,
                         help='load model weights only, ignore specified layers')
