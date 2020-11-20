@@ -603,7 +603,6 @@ class Tacotron2(nn.Module):
 
         length_regulator_output, duration = self.length_regulator.inference(encoder_outputs)
         # length_regulator_output = None
-        # TODO
         if length_regulator_output == None:
             duration_size = None
         else:
