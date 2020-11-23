@@ -9,6 +9,18 @@ SMART-Long_Sentence_TTS 모델은 10초 이하의 짧은 훈련 데이터만으�
 
 추가적으로 decoder의 output을 더 robust하게 예측하기 위해 fastspeech의 duration predictor를 사용하고 본 연구에서는 현재 time step의 mel spectrogram을 생성하는데 참조해야 하는 alignment의 위치를 결정하기 위해 사용합니다.
 
+
+Done
+- curriculum learning 적용
+- text length를 추가 입력으로 사용
+- attention masking 적용
+- attention masking의 window size 조절
+- MelGAN vocoder를 이용한 고품질 합성음
+
+To do
+- curriculum learning 추가 실험
+- attention masking 방법 변경
+- 감정 및 운율 임베딩 추가
  
 ## Requirements
 To install requirements:
