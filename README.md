@@ -23,8 +23,6 @@ To do
 - 감정 및 운율 임베딩 추가
  
 ## Requirements
-To install requirements:
-
 - pytorch 3.6
 - pytorch 1.5.0
 - inflect 0.2.5
