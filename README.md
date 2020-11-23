@@ -38,12 +38,6 @@ To install requirements:
 - tensorboardX 1.8
 - tensorflow 1.15.0
 
-<pre>
-<code>
-pip install -r requirements.txt
-</code>
-</pre>
-
 
 ## Training
 
