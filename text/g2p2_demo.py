@@ -450,7 +450,7 @@ def runKoG2PTest(graph, rulebook):
 def makeTestData():
     for line in sys.stdin:
         print(line)
-        print(runKoG2PTest(line, '/media/sh/Workspace/긴문장합성/kor_Document-level_Neural_TTS_length/text/rulebook.txt'))
+        print(runKoG2PTest(line, './rulebook.txt'))
 
 def makeMetaData():
     for line in sys.stdin:
@@ -460,34 +460,9 @@ def makeMetaData():
         words = content.split(' ')
         converted = ''
         for x in range(len(words) - 1):
-            converted = converted + runKoG2PTest(words[x], '/media/sh/Workspace/긴문장합성/kor_Document-level_Neural_TTS_length/text/rulebook.txt') + ' '
-        converted = converted + runKoG2PTest(words[len(words) - 1], '/media/sh/Workspace/긴문장합성/kor_Document-level_Neural_TTS_length/text/rulebook.txt')
+            converted = converted + runKoG2PTest(words[x], './rulebook.txt') + ' '
+        converted = converted + runKoG2PTest(words[len(words) - 1], './rulebook.txt')
         print("%s|%s" %(prefix, converted))
 
-
-# # Usage:
-# if __name__ == '__main__':
-    # Option
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument("-v", "--v" action="store_true", dest="verbose", default="False",
-    #                 help="This option prints the detail information of g2p process.")
-
-    # (options,args) = parser.parse_args()
-    # verbose = options.verbose
-
-    # # Check Python version
-    # ver_info = sys.version_info
-
-    # if ver_info[0] == 2:
-    #     reload(sys)
-    #     sys.setdefaultencoding('utf-8')
-# ####### making training data
-# #    for line in sys.stdin:
-# #        l = line.split("|")
-# #        runKoG2P(l[0], l[1], 'rulebook.txt')
-
-# ####### making meta data
-# #    makeMetaData()
-#     makeTestData()
 
 

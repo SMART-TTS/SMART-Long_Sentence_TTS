@@ -190,8 +190,7 @@ def tokenize(text, as_id=True, symbol_type=0, debug=False):
         pre_tokens = list(hangul_to_jamo(text))
         pre_tokens = [hcj_to_jamo(_, "lead") if is_hcj(_) else _ for _ in pre_tokens]
     else:
-        # print(runKoG2PTest(text, 'text/rulebook.txt'))
-        pre_tokens = runKoG2PTest(text, '/media/sh/Workspace/긴문장합성/kor_Document-level_Neural_TTS_length/text/rulebook.txt').split(' ')
+        pre_tokens = runKoG2PTest(text, './text/rulebook.txt').split(' ')
         if as_id:
             return [char_to_id_1[pre] for pre in pre_tokens] + [char_to_id_1[EOS]]
         else:

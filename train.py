@@ -169,7 +169,7 @@ def train(output_directory, log_directory, checkpoint_path, warm_start, n_gpus,
     rank (int): rank of current gpu
     hparams (object): comma separated list of "name=value" pairs.
     """
-    GPU_NUM = 0  # 원하는 GPU 번호 입력
+    GPU_NUM = 0   
     device = torch.device(f'cuda:{GPU_NUM}' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(device)  # change allocation of current GPU
     print('Current cuda device ', torch.cuda.current_device())  # check
@@ -219,7 +219,7 @@ def train(output_directory, log_directory, checkpoint_path, warm_start, n_gpus,
     model.train()
     is_overflow = False
     # ================ MAIN TRAINNIG LOOP! ===================
-    for epoch in range(epoch_offset, hparams.epochs):
+    for epoch in range(epoch_offset, hparams.epochs): 
         print("Epoch: {}".format(epoch))
 
         if epoch % 3 == 0:

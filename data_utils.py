@@ -9,7 +9,7 @@ from text import text_to_sequence
 from torch import nn
 
 import os
-
+ 
 class TextMelLoader(torch.utils.data.Dataset):
     """
         1) loads audio,text pairs

@@ -1,95 +1,99 @@
-import tensorflow as tf
-from text import eng_symbols, kor_symbols
+import os
+import argparse
+import json
 
-def create_hparams(hparams_string=None, verbose=False):
-    """Create model hyperparameters. Parse nondefault from given string."""
+from text.symbols import kor_symbols
 
-    hparams = tf.contrib.training.HParams(
-        ################################
-        # Experiment Parameters        #
-        ################################
-        epochs=500,
-        iters_per_checkpoint=1000,
-        seed=1234,
-        dynamic_loss_scaling=True,
-        fp16_run=False,
-        distributed_run=False,
-        dist_backend="nccl",
-        dist_url="tcp://localhost:54321",
-        cudnn_enabled=True,
-        cudnn_benchmark=False,
-        ignore_layers=['e'],
+class HParams():
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            if type(v) == dict:
+                v = HParams(**v)
+            self[k] = v
 
-        ################################
-        # Data Parameters             #
-        ################################
-        load_mel_from_disk=False,
-        training_files='/media/sh/DB/0data_list/ASML_kor_train.txt',
-        validation_files='/media/sh/DB/0data_list/ASML_kor_val.txt',
-        text_cleaners=['korean_cleaners'],
+    def keys(self):
+        return self.__dict__.keys()
 
-        ################################
-        # Audio Parameters             #
-        ################################
-        max_wav_value=32768.0,
-        sampling_rate=16000,
-        filter_length=1024,
-        hop_length=256,
-        win_length=1024,
-        n_mel_channels=80,
-        mel_fmin=0.0,
-        mel_fmax=8000.0,
+    def items(self):
+        return self.__dict__.items()
 
-        ################################
-        # Model Parameters             #
-        ################################
-        n_symbols=len(kor_symbols),
-        symbols_embedding_dim=512,
+    def values(self):
+        return self.__dict__.values()
 
-        # Encoder parameters
-        encoder_kernel_size=5,
-        encoder_n_convolutions=3,
-        encoder_embedding_dim=512,
+    def __len__(self):
+        return len(self.__dict__)
 
-        # Decoder parameters
-        n_frames_per_step=1,  # currently only 1 is supported
-        decoder_rnn_dim=1024,
-        prenet_dim=256,
-        max_decoder_steps=12000,
-        gate_threshold=0.5,
-        p_attention_dropout=0.1,
-        p_decoder_dropout=0.1,
+    def __getitem__(self, key):
+        return getattr(self, key)
 
-        # Attention parameters
-        attention_rnn_dim=1024,
-        attention_dim=128,
+    def __setitem__(self, key, value):
+        return setattr(self, key, value)
 
-        # Location Layer parameters
-        attention_location_n_filters=32,
-        attention_location_kernel_size=31,
+    def __contains__(self, key):
+        return key in self.__dict__
 
-        # Mel-post processing network parameters
-        postnet_embedding_dim=512,
-        postnet_kernel_size=5,
-        postnet_n_convolutions=5,
+    def __repr__(self):
+        return self.__dict__.__repr__()
 
-        ################################
-        # Optimization Hyperparameters #
-        ################################
-        use_saved_learning_rate=False,
-        learning_rate=1e-3,
-        weight_decay=1e-6,
-        grad_clip_thresh=1.0,
-        batch_size=12,
-        mask_padding=True,  # set model's padded outputs to padded values
-        n_attention = 3
-    )
 
-    if hparams_string:
-        tf.logging.info('Parsing command line hparams: %s', hparams_string)
-        hparams.parse(hparams_string)
+def get_hparams(init=True):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-o', '--output_directory', type=str, default='outdir',
+                        help='directory to save checkpoints')
+    parser.add_argument('-l', '--log_directory', type=str, default='logdir',
+                        help='directory to save tensorboard logs')
+    parser.add_argument('-ck', '--checkpoint_path', type=str, default=  './output/ckpt_tts',
+                        required=False, help='checkpoint path')
+    parser.add_argument('--warm_start', action='store_true', default=False,
+                        help='load model weights only, ignore specified layers')
+    parser.add_argument('--n_gpus', type=int, default=1,
+                        required=False, help='number of gpus')
+    parser.add_argument('--rank', type=int, default=0,
+                        required=False, help='rank of current gpu')
+    parser.add_argument('--group_name', type=str, default='group_name',
+                        required=False, help='Distributed group name')
+    parser.add_argument('--hparams', type=str,
+                        required=False, help='comma separated name=value pairs')
+    parser.add_argument('-c', '--config', type=str, default="./configs/base.json",
+                        help='JSON file for configuration')
 
-    if verbose:
-        tf.logging.info('Final parsed hparams: %s', hparams.values())
+    args = parser.parse_args()
+    model_dir = args.output_directory
+
+    if not os.path.exists(model_dir):
+        os.makedirs(model_dir)
+
+    config_path = args.config
+    config_save_path = os.path.join(model_dir, "config.json")
+    if init:
+        with open(config_path, "r") as f:
+            data = f.read()
+        with open(config_save_path, "w") as f:
+            f.write(data)
+    else:
+        with open(config_save_path, "r") as f:
+            data = f.read()
+
+    config = json.loads(data)
+
+    hparams = HParams(**config)
+
+    hparams.n_symbols = len(kor_symbols)
+
+    hparams.training_files = '/media/sh/Workspace/SKT_DB/script.txt'
+    hparams.validation_files = '/media/sh/Workspace/SKT_DB/script_val.txt'
+    hparams.dur_path= '/media/sh/Workspace/SKT_DB/2020/large/FSNR0/wav_16000_alig'
+
+    hparams.output_directory = args.output_directory
+    hparams.log_directory = args.log_directory
+    hparams.checkpoint_path = args.checkpoint_path
+
+    hparams.warm_start = args.warm_start
+    hparams.n_gpus = args.n_gpus
+    hparams.rank = args.rank
+    hparams.group_name = args.group_name
 
     return hparams
+
+
+

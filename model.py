@@ -1,14 +1,53 @@
 from math import sqrt
-import torch
 from torch.autograd import Variable
-from torch import nn
-from torch.nn import functional as F
-from layers import ConvNorm, LinearNorm
-from utils import to_gpu, get_mask_from_lengths, get_mask_from_lengths2, get_sinusoid_encoding_table
-from module import *
-import numpy as np
-import math
+from .layers import ConvNorm, LinearNorm
+from .utils import to_gpu, get_mask_from_lengths, get_mask_from_lengths2, get_sinusoid_encoding_table
+from .module import *
 
+
+def plot_data(data, figsize=(16, 4)):
+    import matplotlib.pyplot as plt
+
+    plt.figure(figsize=figsize)
+    plt.imshow(data, aspect='auto', origin='bottom', interpolation='none')
+
+
+import sys
+sys.path.append('waveglow/')
+import numpy as np
+import torch
+
+from inferref.hparams import get_hparams as create_hparams
+
+from .layers import TacotronSTFT
+
+
+from .utils import load_wav_to_torch
+
+import matplotlib
+matplotlib.use("Agg")
+
+hparamss = create_hparams()
+hparamss.sampling_rate = 16000
+hparamss.max_decoder_steps = 1000
+
+stft = TacotronSTFT(
+            hparamss.filter_length, hparamss.hop_length, hparamss.win_length,
+            hparamss.n_mel_channels, hparamss.sampling_rate, hparamss.mel_fmin,
+            hparamss.mel_fmax)
+
+
+def load_mel(path):
+    audio, sampling_rate = load_wav_to_torch(path)
+    if sampling_rate != hparamss.sampling_rate:
+        raise ValueError("{} SR doesn't match target {} SR".format(
+            sampling_rate, stft.sampling_rate))
+    audio_norm = audio / hparamss.max_wav_value
+    audio_norm = audio_norm.unsqueeze(0)
+    audio_norm = torch.autograd.Variable(audio_norm, requires_grad=False)
+    melspec = stft.mel_spectrogram(audio_norm)
+    melspec = melspec.cuda()
+    return melspec
 
 class LocationLayer(nn.Module):
     def __init__(self, attention_n_filters, attention_kernel_size,
@@ -81,17 +120,28 @@ class Attention(nn.Module):
         if memory.size(0) == 1:  # batch = 1 일때, (합성할때)
             if duration != None:
                 mel_per = round(duration / memory.size(1) + 0.5)
-                A = 400
-                B = duration - A + 100
-                a = [memory.size(1), mel_iter // mel_per + A // 2]
-                b = [memory.size(1), mel_iter // mel_per - A // 2]
+                # A = 500
+                # B = duration - A + 50
+                # a = [memory.size(1), mel_iter // mel_per + A // 5]
+                # b = [memory.size(1), mel_iter // mel_per - A // 5]
+                # c = [memory.size(1), B // mel_per]
+                A = 500
+                B = duration - A + 50
+
+                a = [memory.size(1), mel_iter // 5 + 100]
+                b = [memory.size(1), mel_iter // 5 - 100]
                 c = [memory.size(1), B // mel_per]
+                # A = 500
+                # B = memory.size(1) * 14 // 3
+                # a = [memory.size(1), mel_iter // 6 + 150]
+                # b = [memory.size(1), mel_iter // 6 - 150]
+                # c = [memory.size(1), 500]
 
             else:
                 A = 500
                 B = memory.size(1) * 14 // 3 
-                a = [memory.size(1), mel_iter // 6 + 250]
-                b = [memory.size(1), mel_iter // 6 - 250]
+                a = [memory.size(1), mel_iter // 6 + 150]
+                b = [memory.size(1), mel_iter // 6 - 150]
                 c = [memory.size(1), 500]
 
             a = torch.tensor(a).cuda()
@@ -387,7 +437,13 @@ class Decoder(nn.Module):
         # (T_out, B) -> (B, T_out)
         alignments = torch.stack(alignments).transpose(0, 1)
         # (T_out, B) -> (B, T_out)
-        gate_outputs = torch.stack(gate_outputs).transpose(0, 1)
+        # if len(gate_outputs) != 2:
+        #     print(len(gate_outputs))
+            # gate_outputs = gate_outputs.resize(len(gate_outputs), 1)
+        gate_outputs = torch.stack(gate_outputs)
+        if gate_outputs.dim() == 1:
+            gate_outputs = gate_outputs.resize(gate_outputs.size(0), 1)
+        gate_outputs = gate_outputs.transpose(0, 1)
         gate_outputs = gate_outputs.contiguous()
         # (T_out, B, n_mel_channels) -> (B, T_out, n_mel_channels)
         mel_outputs = torch.stack(mel_outputs).transpose(0, 1).contiguous()
@@ -440,7 +496,7 @@ class Decoder(nn.Module):
         gate_prediction = self.gate_layer(decoder_hidden_attention_context)
         return decoder_output, gate_prediction, self.attention_weights
 
-    def forward(self, memory, decoder_inputs, mel_length, memory_lengths):
+    def forward(self, memory, decoder_inputs, memory_lengths):
         """ Decoder forward pass for training
         PARAMS
         ------
@@ -617,3 +673,124 @@ class Tacotron2(nn.Module):
                 [mel_outputs, mel_outputs_postnet, gate_outputs, alignments, length_regulator_output])
 
         return outputs
+
+
+class Tacotron2_gst(nn.Module):
+    def __init__(self, hparams):
+        super(Tacotron2_gst, self).__init__()
+        self.mask_padding = hparams.mask_padding
+        self.fp16_run = hparams.fp16_run
+        self.n_mel_channels = hparams.n_mel_channels
+        self.n_frames_per_step = hparams.n_frames_per_step
+        self.embedding = nn.Embedding(
+            hparams.n_symbols, hparams.symbols_embedding_dim)
+        std = sqrt(2.0 / (hparams.n_symbols + hparams.symbols_embedding_dim))
+        val = sqrt(3.0) * std  # uniform bounds for std
+        self.embedding.weight.data.uniform_(-val, val)
+        self.encoder = Encoder(hparams)
+        self.decoder = Decoder(hparams)
+        self.postnet = Postnet(hparams)
+        self.gst = GST(hparams)
+
+        self.length_regulator = LengthRegulator()
+
+    def parse_batch(self, batch):
+        text_padded, input_lengths, mel_padded, gate_padded, \
+        output_lengths, alignment_padded = batch
+        text_padded = to_gpu(text_padded).long()
+        input_lengths = to_gpu(input_lengths).long()
+        max_len = torch.max(input_lengths.data).item()
+        mel_padded = to_gpu(mel_padded).float()
+        gate_padded = to_gpu(gate_padded).float()
+        output_lengths = to_gpu(output_lengths).long()
+
+        return (
+            (text_padded, input_lengths, mel_padded, max_len, output_lengths, alignment_padded),
+            (mel_padded, gate_padded, alignment_padded))
+
+    def parse_input(self, inputs):
+        return inputs
+
+    def parse_output(self, outputs, output_lengths=None):
+        if self.mask_padding and output_lengths is not None:
+            mask = ~get_mask_from_lengths(output_lengths)
+            mask = mask.expand(self.n_mel_channels, mask.size(0), mask.size(1))
+            mask = mask.permute(1, 0, 2)
+
+            outputs[0].data.masked_fill_(mask, 0.0)
+            outputs[1].data.masked_fill_(mask, 0.0)
+            outputs[2].data.masked_fill_(mask[:, 0, :], 1e3)  # gate energies
+
+        return outputs
+
+    def parse_output_duration(self, outputs, output_lengths=None):
+        if self.mask_padding and output_lengths is not None:
+            mask = ~get_mask_from_lengths(output_lengths)
+            mask = mask.expand(self.n_mel_channels, mask.size(0), mask.size(1))
+            mask = mask.permute(1, 0, 2)
+
+            outputs[0].data.masked_fill_(mask, 0.0)
+            outputs[1].data.masked_fill_(mask, 0.0)
+            outputs[2].data.masked_fill_(mask[:, 0, :], 1e3)  # gate energies
+
+        return outputs
+
+    def forward(self, inputs):
+        inputs, input_lengths, targets, max_len, output_lengths, alignments_padded = inputs
+        input_lengths, output_lengths = input_lengths.data, output_lengths.data
+
+        embedded_inputs = self.embedding(inputs).transpose(1, 2)
+        transcript_outputs = self.encoder(embedded_inputs, input_lengths)
+
+        length_regulator_output, duration = self.length_regulator(transcript_outputs, target=alignments_padded)
+
+
+        gst_outputs = self.gst(targets)
+        gst_outputs = gst_outputs.expand_as(transcript_outputs)
+        encoder_outputs = transcript_outputs + gst_outputs
+
+        mel_outputs, gate_outputs, alignments = self.decoder(
+            encoder_outputs, targets, memory_lengths=input_lengths)
+
+        mel_outputs_postnet = self.postnet(mel_outputs)
+        mel_outputs_postnet = mel_outputs + mel_outputs_postnet
+
+        return self.parse_output(
+            [mel_outputs, mel_outputs_postnet, gate_outputs, alignments, duration],
+            output_lengths)
+
+
+
+
+    def inference(self, inputs, ref):
+        embedded_inputs = self.embedding(inputs).transpose(1, 2)
+        transcript_outputs = self.encoder.inference(embedded_inputs)  # transcript_outputs
+        ref_audio = np.load(ref)
+        latent_vector = torch.Tensor(ref_audio).cuda()
+        latent_vector = latent_vector.expand_as(transcript_outputs)
+
+        length_regulator_output, duration = self.length_regulator.inference(transcript_outputs)
+        encoder_outputs = transcript_outputs + latent_vector
+
+        if length_regulator_output == None:
+            duration_size = None
+        else:
+            duration_size = duration.size(1)
+        mel_outputs, gate_outputs, alignments = self.decoder.inference(
+            encoder_outputs, duration_size)
+
+        mel_outputs_postnet = self.postnet(mel_outputs)
+        mel_outputs_postnet = mel_outputs + mel_outputs_postnet
+
+        if length_regulator_output == None:
+            outputs = self.parse_output(
+                [mel_outputs, mel_outputs_postnet, gate_outputs, alignments, length_regulator_output])
+        else:
+            outputs = self.parse_output_duration(
+                [mel_outputs, mel_outputs_postnet, gate_outputs, alignments, length_regulator_output])
+
+        return outputs
+
+
+
+
