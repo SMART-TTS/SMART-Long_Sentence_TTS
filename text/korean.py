@@ -413,7 +413,7 @@ if __name__ == "__main__":
         print(normalize(text))
         print("="*30)
         print(tokenize(text))
-
+ 
 
     # test_normalize("JTBC는 JTBCs를 DY는 A가 Absolute")
     # test_normalize("오늘(13일) 101마리 강아지가")
