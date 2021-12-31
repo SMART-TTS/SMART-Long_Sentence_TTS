@@ -13,13 +13,9 @@ SMART-Long_Sentence_TTS 모델은 10초 이하의 짧은 훈련 데이터만으�
 Done
 - curriculum learning 적용
 - target length predictor 적용
-- attention masking 적용
+- attention masking 적용 
 - attention masking의 window size 조절
 - MelGAN vocoder를 이용한 고품질 합성음
-
-To do
-- curriculum learning 추가 실험
-- attention masking 방법 변경
 - 감정 및 운율 임베딩 추가
  
 ## Requirements
