@@ -64,3 +64,7 @@ Synthesized audio samples can be found in ./samples
 [2] FastSpeech : https://github.com/xcmyz/FastSpeech
 
 [3] MelGAN : https://github.com/seungwonpark/melgan
+
+[4] GST-Tacotron : https://github.com/KinglittleQ/GST-Tacotron
+
+본 프로젝트 관련 개선사항들에 대한 기술문서는 [여기](https://drive.google.com/file/d/1n4JbB9lvnaLJnOj822KGjm19T9b-1rob/view?usp=sharing)를 참고해 주세요.
